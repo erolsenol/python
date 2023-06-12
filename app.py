@@ -4,6 +4,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.graphics import Color, Ellipse, Line
 
+import time
 import win32gui
 import pygetwindow
 import pyautogui
@@ -12,7 +13,7 @@ import psutil
 
 from window_ss import ImageProccess
 from image import imageSearch
-from autoit import moveMouse, click
+from control import moveMouse, click
 
 emulatorSrc = r"C:\Program Files\BlueStacks_nxt\HD-Player.exe"
 emulatorName = "HD-Player.exe"
@@ -71,13 +72,29 @@ def openEmulator():
     except:
         print("Emulator default src not runing")
 
+def adbServerIsRuning():
+    # adb sunucusunu kontrol etmek için shell komutunu çalıştırın
+    result = subprocess.run(['adb', 'devices'], capture_output=True, text=True)
+
+    # adb sunucusunun çıktısını alın
+    output = result.stdout
+
+    # Çıktıda "List of devices attached" ifadesini kontrol edin
+    if "List of devices attached" in output:
+        return True
+    else:
+        return False
+
 def test():
-    # print(getEmulatorPosition())
+    if not adbServerIsRuning():
+        print("111")
+        subprocess.run(['adb', 'start-server'])
+        # 1 saniye bekletme
+        time.sleep(1)
 
-    screenImage = ImageProccess.takeSS()
-    imageSearch(screenImage, "images/start-pvp.jpg")
+    print("1123")
 
-    return
+    return True
 
 def findImage(imgName = "", old_position_set = False):
     if not imgName:
@@ -93,11 +110,11 @@ def findImage(imgName = "", old_position_set = False):
 
     # moveMouse((imgPosition["x"] + emuPosition["x"]), (imgPosition["y"] + emuPosition["y"]))
     current_x, current_y = pyautogui.position()
-    pyautogui.click((imgPosition["x"] + emuPosition["x"]), (imgPosition["y"] + emuPosition["y"]))
+    click((imgPosition["x"] + emuPosition["x"]), (imgPosition["y"] + emuPosition["y"]))
     if old_position_set:
         pyautogui.moveTo(current_x, current_y)
         return
-
+    
     return
 
 
@@ -111,7 +128,8 @@ class MyPaintApp(App):
         return parent
 
     def clear_canvas(self, obj):
-        findImage("images/start-coop.jpg")
+        # test()
+        findImage("images/cr-start-icon.jpg")
         # start()
 
 
