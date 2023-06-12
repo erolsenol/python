@@ -19,8 +19,12 @@ class ImageProccess:
 
         img = ImageGrab.grab(bbox)
 
-        img.show()
-        return
+        imgName = "images/screenshot.jpg"
+
+        img.save(imgName, "JPEG")
+
+        # img.show()
+        return imgName
 
 
 
