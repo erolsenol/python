@@ -1,9 +1,10 @@
 from PIL import ImageGrab
 import win32gui, win32api, win32con
 import time
+import os
 
 class ImageProccess:
-    def takeSS():
+    def takeSS(len = 0):
         toplist, winlist = [], []
         def enum_cb(hwnd, results):
             winlist.append((hwnd, win32gui.GetWindowText(hwnd)))
@@ -19,14 +20,20 @@ class ImageProccess:
 
         img = ImageGrab.grab(bbox)
 
-        imgName = "images/screenshot.jpg"
+        imgName = f"images/ss/screenshot{len}.jpg"
 
         img.save(imgName, "JPEG")
 
         # img.show()
         return imgName
 
+    def pathToFileLength(self):
+        klasor_yolu = './images/ss'  # Klasörün yolunu belirtin
 
+        dosya_listesi = os.listdir(klasor_yolu)
+        fileLen = len(dosya_listesi)
+        self.takeSS(fileLen)
+        return
 
 # hwnd = win32gui.FindWindow(None, 'BlueStacks')
 # print("1")

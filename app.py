@@ -10,6 +10,9 @@ import pygetwindow
 import pyautogui
 import subprocess
 import psutil
+import win32ui 
+import win32con
+import win32api
 
 from window_ss import ImageProccess
 from image import imageSearch
@@ -22,6 +25,95 @@ comMyDefence = "com.my.defense"
 # adb_command = 'adb shell am start -n com.my.defense/com.my.defense/games.my.heart.commonpreloaderlib.GameActivity'
 # adb_command = 'adb shell am start -n com.my.defense/com.amazon.identity.auth.device.workflow.WorkflowActivity'
 adb_command = 'adb shell am start -n com.my.defense/com.my.defense/u0a140'
+
+openWindowList = []
+emulator0 = None
+
+def windowDrawLine(x, y, hwnd):
+    # Kare boyutu
+    kare_genislik = 100
+    kare_yukseklik = 100
+
+    # Kare için dikdörtgen koordinatları
+    sol = 100
+    ust = 100
+    sag = sol + kare_genislik
+    alt = ust + kare_yukseklik
+
+    while True:
+            # Pencerenin cihaz bağlamını alma
+        hdc = win32gui.GetWindowDC(hwnd)
+
+        # Cihaz bağlamını kullanarak win32ui kaldırıcısı oluşturma
+        dc = win32ui.CreateDCFromHandle(hdc)
+        
+        # Kare kenar rengi (yeşil)
+        kenar_rengi = win32api.RGB(0, 255, 0)
+
+        # Kalem oluşturma
+        kalem = win32ui.CreatePen(win32con.PS_SOLID, 2, kenar_rengi)
+        
+        # Kareyi saydam çizme
+        dc.SelectObject(kalem)  # Kalem seçimi
+
+        dc.SetROP2(win32con.R2_XORPEN)  # XOR modunda çizim
+        # dc.SetBkColor(0x12345)
+        dc.SetBkMode(0, TRANSPARENT)
+
+        dc.Rectangle((sol, ust, sag, alt))  # Kareyi çizme
+
+        # Gereksiz nesneleri serbest bırakma
+        # dc.DeleteDC()
+        win32gui.ReleaseDC(hwnd, hdc)
+    return
+
+def windowDraw(x, y, hwnd):
+    # Pencerenin cihaz bağlamını alma
+    hdc = win32gui.GetWindowDC(hwnd)
+
+    # Cihaz bağlamını kullanarak win32ui kaldırıcısı oluşturma
+    dc = win32ui.CreateDCFromHandle(hdc)
+
+    # Yeni bir win32ui kalem nesnesi oluşturma
+    kalem = win32ui.CreatePen(win32con.PS_SOLID, 1, win32api.RGB(255, 0, 0))
+
+    # Kalem nesnesini cihaz bağlamına seçme
+    eski_kalem = dc.SelectObject(kalem)
+
+
+    # Kareyi çizme
+    win32gui.Rectangle(hdc, 100, 100, 200, 200)
+
+    # Yazıyı çizme
+    dc.TextOut(100, 220, "Merhaba")
+
+    # Kalem nesnesini geri alıyoruz
+    dc.SelectObject(eski_kalem)
+
+    # Kalem nesnesini silme
+    # win32gui.DeleteObject(kalem.GetHandle())
+    
+    # Gereksiz nesneleri serbest bırakma
+    dc.DeleteDC()
+    win32gui.ReleaseDC(hwnd, hdc)
+    return
+
+def setEmulator():
+    win32gui.EnumWindows(enum_windows_callback, openWindowList)
+    for x in openWindowList:
+        if x[1].find("BlueStacks App Player") > -1:
+            emulator0 = x[0]
+            
+    
+    # setEmulatorSize(1280, 720, emulator0)
+    windowDrawLine(100,150,emulator0)
+    # windowDraw(100,150,emulator0)
+    return
+
+def enum_windows_callback(hwnd, window_list):
+    window_text = win32gui.GetWindowText(hwnd)
+    window_list.append((hwnd, window_text))
+    return
 
 def getEmulatorPosition():
     # BlueStacks penceresinin başlığını bulun
@@ -43,6 +135,16 @@ def getEmulatorPosition():
     # Pencerenin X ve Y koordinatlarını alın
     position = dict(x = left, y = top, xEnd = leftEnd, yEnd = topEnd)
     return position
+
+def setEmulatorSize(x, y, hwnd = None):
+    # Hedef pencereyi bulma
+
+    if hwnd:
+        # Hedef pencerenin boyutunu değiştirme
+        win32gui.MoveWindow(hwnd, 0, 0, x, y, True)
+    else:
+        print("Hedef pencere bulunamadı.")
+    return
 
 
 def emulatorHasRuning():
@@ -122,7 +224,7 @@ class MyPaintApp(App):
 
     def build(self):
         parent = Widget()
-        clearbtn = Button(text='Start')
+        clearbtn = Button(text='Start SS')
         clearbtn.bind(on_release=self.clear_canvas)
         parent.add_widget(clearbtn)
         return parent
