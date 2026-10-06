@@ -13,3 +13,5 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m compileall -q app.py control.py image.py window_ss.py paint pong ui.py
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m unittest discover -s tests -v
